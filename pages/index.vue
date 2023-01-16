@@ -1,80 +1,22 @@
 <template>
   <div class="container">
     <CBox
-      v-bind="mainStyles[colorMode]"
+
       d="flex"
       w="100vw"
       h="100vh"
       flex-dir="column"
       justify-content="center"
     >
-      <CHeading text-align="center" mb="4"> ⚡️ Hello chakra-ui/vue </CHeading>
-      <CFlex justify="center" direction="column" align="center">
-        <CBox mb="3">
-          <CIconButton
-            mr="3"
-            :icon="colorMode === 'light' ? 'moon' : 'sun'"
-            :aria-label="`Switch to ${
-              colorMode === 'light' ? 'dark' : 'light'
-            } mode`"
-            @click="toggleColorMode"
-          />
-          <CButton left-icon="info" variant-color="blue" @click="showToast">
-            Show Toast
+      <CHeading text-align="center" mb="4">{{snapshotValue}} </CHeading>
+      <CFlex justify="center" direction="column" align="center" >
+        <CBox mb="3" display="flex" justify-content="center" flex-direction="column">
+          <CInput placeholder="Your input..." type="text" v-model="inputValue"/>
+          <CButton left-icon="info" variant-color="blue" @click="doSubmit" mt="2">
+            Submit
           </CButton>
         </CBox>
-        <CAvatarGroup>
-          <CAvatar
-            name="Evan You"
-            alt="Evan You"
-            src="https://pbs.twimg.com/profile_images/1206997998900850688/cTXTQiHm_400x400.jpg"
-          >
-            <CAvatarBadge size="1.0em" bg="green.500" />
-          </CAvatar>
-          <CAvatar
-            name="Jonathan Bakebwa"
-            alt="Jonathan Bakebwa"
-            src="https://res.cloudinary.com/xtellar/image/upload/v1572857445/me_zqos4e.jpg"
-          >
-            <CAvatarBadge size="1.0em" bg="green.500" />
-          </CAvatar>
-          <CAvatar
-            name="Segun Adebayo"
-            alt="Segun Adebayo"
-            src="https://pbs.twimg.com/profile_images/1169353373012897802/skPUWd6e_400x400.jpg"
-          >
-            <CAvatarBadge size="1.0em" bg="green.500" />
-          </CAvatar>
-          <CAvatar src="pop">
-            <CAvatarBadge size="1.0em" border-color="papayawhip" bg="tomato" />
-          </CAvatar>
-        </CAvatarGroup>
-        <CButton
-          left-icon="close"
-          variant-color="red"
-          mt="3"
-          @click="showModal = true"
-        >
-          Delete Account
-        </CButton>
-        <CModal :is-open="showModal">
-          <CModalOverlay />
-          <CModalContent>
-            <CModalHeader>Are you sure?</CModalHeader>
-            <CModalBody>Deleting user cannot be undone</CModalBody>
-            <CModalFooter>
-              <CButton @click="showModal = false"> Cancel </CButton>
-              <CButton
-                margin-left="3"
-                variant-color="red"
-                @click="showModal = false"
-              >
-                Delete User
-              </CButton>
-            </CModalFooter>
-            <CModalCloseButton @click="showModal = false" />
-          </CModalContent>
-        </CModal>
+                
       </CFlex>
     </CBox>
   </div>
@@ -96,7 +38,8 @@ import {
   CModalCloseButton,
   CIconButton,
   CFlex,
-  CHeading
+  CHeading,
+  CInput
 } from '@chakra-ui/vue'
 
 export default {
@@ -118,43 +61,42 @@ export default {
     CFlex,
     CHeading
   },
-  inject: ['$chakraColorMode', '$toggleColorMode'],
   data () {
     return {
-      showModal: false,
-      mainStyles: {
-        dark: {
-          bg: 'gray.700',
-          color: 'whiteAlpha.900'
-        },
-        light: {
-          bg: 'white',
-          color: 'gray.900'
-        }
-      }
-    }
-  },
-  computed: {
-    colorMode () {
-      return this.$chakraColorMode()
-    },
-    theme () {
-      return this.$chakraTheme()
-    },
-    toggleColorMode () {
-      return this.$toggleColorMode
+      snapshotValue: 'Hello chakra-ui/vue',
+      inputValue: ''
     }
   },
   methods: {
-    showToast () {
-      this.$toast({
-        title: 'Account created.',
-        description: "We've created your account for you.",
-        status: 'success',
-        duration: 10000,
-        isClosable: true
-      })
+    async doSubmit  () {
+      try {
+       await this.$axios.$post(`http://127.0.0.1:5001/db-circle-b3982/us-central1/saveInputText`, { text: this.inputValue })
+        this.$toast({
+          description: "We've created your account for you.",
+          status: 'success',
+          duration: 10000,
+          isClosable: true
+        })
+      }catch(e){
+        this.$toast({
+          description: "Oops something went wrong, please try again later.",
+          status: 'error',
+          duration: 10000,
+          isClosable: true
+        })
+      }
+     
     }
+  }, 
+  mounted() {
+    const dataRef = this.$fire.firestore.collection('Texts').doc('inputfield')
+    dataRef.onSnapshot(docSnapshot => {
+      // Get the data from the snapshot
+      const data = docSnapshot.data();
+      this.snapshotValue = data.text
+    }, err => {
+        console.log(`Encountered error: ${err}`);
+    });
   }
 }
 </script>
