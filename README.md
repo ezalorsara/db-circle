@@ -16,6 +16,7 @@ $ npm run dev
 ## To Run google functions locally
 
 ```bash
+$ npm install -g firebase-tools
 in application root folder go to functions folder
 $ cd functions
 $ npm install

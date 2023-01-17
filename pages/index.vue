@@ -70,9 +70,10 @@ export default {
   methods: {
     async doSubmit  () {
       try {
-       await this.$axios.$post(`http://127.0.0.1:5001/db-circle-b3982/us-central1/saveInputText`, { text: this.inputValue })
+       const result = await this.$axios.$post(`http://127.0.0.1:5001/db-circle-b3982/us-central1/saveInputText`, { text: this.inputValue })
+      
         this.$toast({
-          description: "We've created your account for you.",
+          description: result,
           status: 'success',
           duration: 10000,
           isClosable: true
